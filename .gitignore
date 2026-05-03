@@ -1,16 +1,12 @@
-# Node modules
 node_modules/
 
-# Environment variables
 .env
 backend/.env
 frontend/.env
 
-# Build files
 dist/
 frontend/dist/
 
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -22,10 +18,8 @@ Thumbs.db
 
 package-lock.json
 
-# SQLite DB
 backend/*.db
 backend/*.sqlite
 
-# Temporary files
 *.tmp
 *.temp
