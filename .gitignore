@@ -1,31 +1,28 @@
-# 🔥 Node modules (sabse important)
+# Node modules
 node_modules/
 
-# 🔐 Environment variables (warna hack ho jayega bhai)
+# Environment variables
 .env
 backend/.env
 frontend/.env
 
-# 🗂️ Build files
+# Build files
 dist/
 frontend/dist/
 
-# 🧾 Logs
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# 💻 OS files (Windows ka kachra)
 .DS_Store
 Thumbs.db
 
-# 🧠 VS Code settings (optional)
 .vscode/
 
-# 📦 Package lock (optional, but usually keep it)
-# package-lock.json
+package-lock.json
 
-# 🔥 SQLite DB (IMPORTANT)
+# SQLite DB
 backend/*.db
 backend/*.sqlite
 
