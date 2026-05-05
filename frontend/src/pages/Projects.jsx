@@ -10,116 +10,112 @@ export default function Projects() {
   const [form, setForm] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
 
-  const load = async () => {
-    try {
-      const res = await api.get('/projects');
-      setProjects(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const load = () => api.get('/projects').then(r => setProjects(r.data)).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
   const createProject = async (e) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault(); setError('');
     try {
       await api.post('/projects', form);
-      setForm({ name: '', description: '' });
-      setShowForm(false);
-      load();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create project');
-    }
+      setForm({ name: '', description: '' }); setShowForm(false); load();
+    } catch (err) { setError(err.response?.data?.error || 'Failed'); }
   };
 
   const deleteProject = async (id) => {
     if (!confirm('Delete this project and all its tasks?')) return;
-    try {
-      await api.delete(`/projects/${id}`);
-      setProjects(prev => prev.filter(p => p.id !== id));
-    } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete');
-    }
+    await api.delete(`/projects/${id}`);
+    setProjects(prev => prev.filter(p => p.id !== id));
   };
 
-  if (loading) return <><Navbar /><div className="spinner" /></>;
+  if (loading) return <><Navbar /><div className="spin" /></>;
 
   return (
     <>
       <Navbar />
       <div className="page">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 36 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '28px', fontWeight: 800 }}>Projects</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '4px' }}>{projects.length} project{projects.length !== 1 ? 's' : ''}</p>
+            <p style={{ color: '#888', fontSize: 12, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Workspace</p>
+            <h1 style={{ fontSize: 28, fontWeight: 600, letterSpacing: '-0.5px' }}>Projects</h1>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-            {showForm ? '✕ Cancel' : '+ New Project'}
+          <button className="btn btn-black" onClick={() => setShowForm(!showForm)}>
+            {showForm ? 'Cancel' : '+ New project'}
           </button>
         </div>
 
         {showForm && (
-          <div className="card" style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '16px', fontWeight: 700, marginBottom: '20px' }}>Create Project</h3>
-            {error && <div className="error-msg" style={{ marginBottom: '14px' }}>{error}</div>}
+          <div style={{
+            background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 12,
+            padding: 24, marginBottom: 32,
+          }}>
+            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 20 }}>Create a project</h3>
+            {error && <div className="error" style={{ marginBottom: 14 }}>{error}</div>}
             <form onSubmit={createProject}>
               <div className="form-group">
-                <label className="label">Project Name</label>
+                <label className="label">Project name</label>
                 <input placeholder="e.g. Website Redesign" value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label className="label">Description (optional)</label>
+                <label className="label">Description</label>
                 <textarea placeholder="What's this project about?" value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                  style={{ minHeight: '80px', resize: 'vertical' }} />
+                  style={{ minHeight: 80, resize: 'vertical' }} />
               </div>
-              <button className="btn-primary" type="submit">Create Project →</button>
+              <button className="btn btn-black" type="submit">Create project</button>
             </form>
           </div>
         )}
 
         {projects.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: '60px', color: 'var(--muted)' }}>
-            No projects yet. Create one to get started!
+          <div style={{
+            background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 12,
+            padding: '80px 24px', textAlign: 'center',
+          }}>
+            <p style={{ fontWeight: 500, marginBottom: 8 }}>No projects yet</p>
+            <p style={{ color: '#888', fontSize: 14 }}>Create your first project to get started.</p>
           </div>
         ) : (
           <div className="grid-2">
-            {projects.map(p => (
-              <div key={p.id} className="card" style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <Link to={`/projects/${p.id}`} style={{ fontFamily: 'var(--font-heading)', fontSize: '18px', fontWeight: 700, color: 'var(--text)' }}>
-                    {p.name}
+            {projects.map(p => {
+              const pct = p.task_count > 0 ? Math.round((p.done_count / p.task_count) * 100) : 0;
+              return (
+                <div key={p.id} style={{
+                  background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 12,
+                  padding: 24, display: 'flex', flexDirection: 'column', gap: 16,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.2px', marginBottom: 4 }}>{p.name}</h3>
+                      {p.description && (
+                        <p style={{ color: '#888', fontSize: 13, lineHeight: 1.5 }}>{p.description}</p>
+                      )}
+                    </div>
+                    <button className="btn-danger" onClick={() => deleteProject(p.id)} style={{ marginLeft: 12, flexShrink: 0 }}>Delete</button>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#888' }}>
+                    <span>by {p.owner_name}</span>
+                    <span>{p.task_count} tasks · {p.done_count} done</span>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#888', marginBottom: 6 }}>
+                      <span>Progress</span><span>{pct}%</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div className="progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+
+                  <Link to={`/projects/${p.id}`}>
+                    <button className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
+                      Open project →
+                    </button>
                   </Link>
-                  <button className="btn-danger btn-sm" onClick={() => deleteProject(p.id)}>Delete</button>
                 </div>
-                {p.description && (
-                  <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px', lineHeight: '1.5' }}>{p.description}</p>
-                )}
-                <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--muted)', marginBottom: '16px' }}>
-                  <span>👤 {p.owner_name}</span>
-                  <span>📋 {p.done_count}/{p.task_count} tasks done</span>
-                </div>
-
-                {/* Progress bar */}
-                <div style={{ background: 'var(--surface2)', borderRadius: '4px', height: '4px', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    background: 'var(--accent)',
-                    width: `${p.task_count > 0 ? (p.done_count / p.task_count) * 100 : 0}%`,
-                    transition: 'width 0.3s',
-                  }} />
-                </div>
-
-                <Link to={`/projects/${p.id}`}>
-                  <button className="btn-secondary" style={{ width: '100%', marginTop: '16px' }}>Open Project →</button>
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
