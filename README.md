@@ -77,7 +77,7 @@ project-root/
 ### 1. Clone Repository
 
 ```bash id="3dxykl"
-git clone https://github.com/your-username/task-manager.git
+git clone https://github.com/sagar-1602/task-manager.git
 cd task-manager
 ```
 
