@@ -26,12 +26,12 @@ export default function Dashboard() {
   if (loading) return <><Navbar /><div className="spin" /></>;
 
   const statItems = [
-    { label: 'Projects', value: stats?.totalProjects ?? 0, accent: false },
-    { label: 'Total tasks', value: stats?.totalTasks ?? 0, accent: false },
-    { label: 'In progress', value: stats?.inProgressTasks ?? 0, accent: false },
-    { label: 'Completed', value: stats?.doneTasks ?? 0, accent: true },
-    { label: 'Overdue', value: stats?.overdueTasks ?? 0, danger: true },
-  ];
+  { label: 'Projects', value: stats?.totalProjects ?? 0, accent: false },
+  { label: 'Total tasks', value: stats?.totalTasks ?? 0, accent: false },
+  { label: 'In progress', value: stats?.inProgressTasks ?? 0, accent: false },
+  { label: 'Completed', value: stats?.doneTasks ?? 0, accent: true },
+  { label: 'Overdue', value: stats?.overdueTasks ?? 0, danger: true },
+];
 
   return (
     <>
@@ -65,7 +65,7 @@ export default function Dashboard() {
 
         {/* Tasks list */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ fontSize: 17, fontWeight: 600 }}>Assigned to me</h2>
+          <h2 style={{ fontSize: 17, fontWeight: 600 }}>My assigned tasks</h2>
           <span style={{ fontSize: 13, color: '#888' }}>{myTasks.length} task{myTasks.length !== 1 ? 's' : ''}</span>
         </div>
 
