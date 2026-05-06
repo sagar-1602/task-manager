@@ -7,8 +7,36 @@ const DB_PATH = path.join(__dirname, "taskmanager.db");
 let db = null;
 
 function saveDb() {
+  if (!db) return;
   const data = db.export();
   fs.writeFileSync(DB_PATH, Buffer.from(data));
+}
+
+function getDb() {
+  if (!db) throw new Error("Database not initialized");
+  return db;
+}
+
+function query(sql, params = []) {
+  const stmt = getDb().prepare(sql);
+  stmt.bind(params);
+  const rows = [];
+  while (stmt.step()) rows.push(stmt.getAsObject());
+  stmt.free();
+  return rows;
+}
+
+function run(sql, params = []) {
+  getDb().run(sql, params);
+  const res = getDb().exec("SELECT last_insert_rowid() as id");
+  const lastInsertRowid = res[0] ? res[0].values[0][0] : null;
+  saveDb();
+  return { lastInsertRowid };
+}
+
+function get(sql, params = []) {
+  const rows = query(sql, params);
+  return rows[0] || null;
 }
 
 async function initDb() {
@@ -21,7 +49,7 @@ async function initDb() {
     db = new SQL.Database();
   }
 
-  db.run(`
+  getDb().run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -29,8 +57,9 @@ async function initDb() {
       password TEXT NOT NULL,
       role TEXT DEFAULT 'member',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-
+    )
+  `);
+  getDb().run(`
     CREATE TABLE IF NOT EXISTS projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -38,8 +67,9 @@ async function initDb() {
       owner_id INTEGER NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (owner_id) REFERENCES users(id)
-    );
-
+    )
+  `);
+  getDb().run(`
     CREATE TABLE IF NOT EXISTS project_members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       project_id INTEGER NOT NULL,
@@ -48,8 +78,9 @@ async function initDb() {
       FOREIGN KEY (project_id) REFERENCES projects(id),
       FOREIGN KEY (user_id) REFERENCES users(id),
       UNIQUE(project_id, user_id)
-    );
-
+    )
+  `);
+  getDb().run(`
     CREATE TABLE IF NOT EXISTS tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -64,38 +95,11 @@ async function initDb() {
       FOREIGN KEY (project_id) REFERENCES projects(id),
       FOREIGN KEY (assigned_to) REFERENCES users(id),
       FOREIGN KEY (created_by) REFERENCES users(id)
-    );
+    )
   `);
 
   saveDb();
-  return db;
+  console.log("Database initialized");
 }
 
-// Helper: run a query that returns rows
-function query(sql, params = []) {
-  const stmt = db.prepare(sql);
-  stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) {
-    rows.push(stmt.getAsObject());
-  }
-  stmt.free();
-  return rows;
-}
-
-// Helper: run INSERT/UPDATE/DELETE, returns { lastInsertRowid, changes }
-function run(sql, params = []) {
-  db.run(sql, params);
-  const lastId = db.exec("SELECT last_insert_rowid() as id")[0];
-  const lastInsertRowid = lastId ? lastId.values[0][0] : null;
-  saveDb();
-  return { lastInsertRowid };
-}
-
-// Helper: get single row
-function get(sql, params = []) {
-  const rows = query(sql, params);
-  return rows[0] || null;
-}
-
-module.exports = { initDb, query, run, get, saveDb };
+module.exports = { initDb, query, run, get };
